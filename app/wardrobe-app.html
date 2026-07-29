@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>衣橱管理 · Wardrobe Studio</title>
+<style>
+/* ========== Reset ========== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ========== Base ========== */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+  background: #F5F1E8;
+  color: #555;
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* ========== Header ========== */
+.app-header {
+  background: #fff;
+  padding: 14px 24px;
+  border-bottom: 1px solid #E8E0D0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.app-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #6B5B4E;
+  letter-spacing: 0.5px;
+}
+.app-subtitle {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 2px;
+}
+.item-count-badge {
+  background: #6B5B4E;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ========== Tabs ========== */
+.tabs {
+  display: flex;
+  background: #fff;
+  border-bottom: 1px solid #E8E0D0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0 24px;
+}
+.tab-btn {
+  padding: 14px 22px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  color: #999;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.tab-btn.active {
+  color: #6B5B4E;
+  border-bottom-color: #6B5B4E;
+  font-weight: 600;
+}
+.tab-btn:hover {
+  color: #6B5B4E;
+}
+
+/* ========== Tab Content ========== */
+.tab-content {
+  display: none;
+  padding: 24px;
+}
+.tab-content.active {
+  display: block;
+}
+#tab3.tab-content {
+  padding: 16px;
+}
+
+/* ========== Season Filter ========== */
+.season-filter {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.season-btn {
+  padding: 8px 20px;
+  border: 2px solid #E0D8C8;
+  background: #fff;
+  border-radius: 24px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.season-btn.active {
+  border-color: #4A90D9;
+  background: #4A90D9;
+  color: #fff;
+}
+.season-btn:hover:not(.active) {
+  border-color: #4A90D9;
+  color: #4A90D9;
+}
+
+/* ========== Upload Section ========== */
+.upload-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.upload-btn {
+  padding: 10px 24px;
+  background: #6B5B4E;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.upload-btn:hover {
+  background: #5A4A3D;
+}
+.upload-btn svg {
+  width: 16px;
+  height: 16px;
+}
+.upload-counter {
+  font-size: 13px;
+  color: #999;
+  font-weight: 500;
+}
+.upload-counter.highlight {
+  color: #6B5B4E;
+  font-weight: 600;
+}
+.upload-progress-wrap {
+  flex: 1;
+  min-width: 200px;
+  display: none;
+}
+.upload-progress-wrap.active {
+  display: block;
+}
+.upload-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #E8E0D0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.upload-progress-fill {
+  height: 100%;
+  background: #6B5B4E;
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.3s;
+}
+.upload-progress-text {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+/* ========== Category / Brand Section ========== */
+.category-section, .brand-section {
+  margin-bottom: 32px;
+}
+.category-header, .brand-header {
+  font-size: 18px;
+  font-weight: 600;
+  color: #6B5B4E;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #E8E0D0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.category-count {
+  font-size: 13px;
+  color: #999;
+  font-weight: 400;
+}
+
+/* ========== Item Grid ========== */
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+/* ========== Item Card ========== */
+.item-card {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: box-shadow 0.2s, transform 0.2s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.item-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+.item-card-image {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  background: #F5F1E8;
+  display: block;
+}
+.item-card-body {
+  padding: 10px 12px;
+  flex: 1;
+}
+.item-card-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.item-card-brand {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 6px;
+}
+.item-card-brand.unknown {
+  color: #ccc;
+}
+.item-card-brand.editable {
+  cursor: pointer;
+  padding: 2px 4px;
+  margin: -2px -4px 6px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  display: inline-block;
+}
+.item-card-brand.editable:hover {
+  background: #F0EDE5;
+}
+.item-card-slot {
+  font-size: 12px;
+  color: #aaa;
+  margin-bottom: 6px;
+}
+.item-card-seasons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.season-tag {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.item-card-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 0 12px 10px;
+}
+.slot-select {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid #E0D8C8;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #666;
+  background: #FAFAFA;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+}
+.slot-select:focus {
+  border-color: #4A90D9;
+}
+.delete-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #fff0f0;
+  color: #e57373;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.delete-btn:hover {
+  background: #ffcdd2;
+}
+.recycle-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #F0EDE5;
+  color: #8D7B6B;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.recycle-btn:hover {
+  background: #E0D8C8;
+  color: #6B5B4E;
+}
+
+/* ========== Brand Edit Input ========== */
+.brand-edit-input {
+  width: 100%;
+  padding: 2px 6px;
+  border: 1px solid #4A90D9;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  margin-bottom: 6px;
+}
+
+/* ========== Outfit Card Generator Layout ========== */
+.outfit-layout {
+  display: flex;
+  gap: 16px;
+  height: calc(100vh - 160px);
+}
+.outfit-sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  overflow-y: auto;
+  padding: 16px;
+}
+.sidebar-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #6B5B4E;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #E8E0D0;
+}
+.sidebar-category {
+  margin-bottom: 18px;
+}
+.sidebar-category-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #999;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.sidebar-items {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+.sidebar-item {
+  flex-shrink: 0;
+  width: 56px;
+  height: 72px;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+  background: #F5F1E8;
+}
+.sidebar-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: none;
+}
+.sidebar-item:hover {
+  border-color: #4A90D9;
+  transform: scale(1.05);
+}
+.sidebar-item.added {
+  opacity: 0.35;
+  cursor: default;
+  border-color: transparent;
+}
+.sidebar-item.added:hover {
+  transform: none;
+}
+.sidebar-item.added::after {
+  content: '\2713';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 22px;
+  color: #4A90D9;
+  font-weight: bold;
+  text-shadow: 0 1px 3px rgba(255,255,255,0.8);
+}
+
+/* ========== Canvas Area ========== */
+.outfit-canvas-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.outfit-canvas-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+#outfit-canvas {
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 4/5;
+  background: #F5F1E8;
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
+}
+.canvas-empty-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ccc;
+  font-size: 15px;
+  text-align: center;
+  pointer-events: none;
+  line-height: 2;
+}
+.canvas-item {
+  position: absolute;
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.canvas-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+}
+.canvas-item-close {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #e57373;
+  color: #fff;
+  border: 2px solid #fff;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  line-height: 1;
+  padding: 0;
+  font-family: inherit;
+}
+.canvas-item-close:hover {
+  background: #ef5350;
+}
+.canvas-item-resize {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  width: 14px;
+  height: 14px;
+  background: #4A90D9;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  cursor: nwse-resize;
+  z-index: 10;
+}
+.outfit-title-input {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  padding: 8px 16px;
+  border: none;
+  border-bottom: 2px solid rgba(107, 91, 78, 0.25);
+  border-radius: 0;
+  font-size: 16px;
+  text-align: center;
+  background: transparent;
+  color: #6B5B4E;
+  font-family: inherit;
+  outline: none;
+  z-index: 1;
+  font-weight: 600;
+  transition: border-color 0.2s;
+}
+.outfit-title-input:focus {
+  border-bottom-color: #6B5B4E;
+}
+.outfit-title-input::placeholder {
+  color: #ccc;
+  font-weight: 400;
+}
+.outfit-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.save-outfit-btn {
+  padding: 10px 28px;
+  background: #6B5B4E;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+.save-outfit-btn:hover {
+  background: #5A4A3D;
+}
+.clear-canvas-btn {
+  padding: 10px 28px;
+  background: #fff;
+  color: #999;
+  border: 2px solid #E0D8C8;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.clear-canvas-btn:hover {
+  border-color: #e57373;
+  color: #e57373;
+}
+
+/* ========== Display Wall ========== */
+.wall-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.wall-card {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.wall-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+.wall-card img {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  background: #F5F1E8;
+  display: block;
+}
+.wall-card-body {
+  padding: 10px 12px;
+}
+.wall-card-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wall-card-brand {
+  font-size: 11px;
+  color: #999;
+  margin-top: 2px;
+}
+.wall-card-brand.unknown {
+  color: #ccc;
+}
+
+/* ========== Recycle Tab ========== */
+.recycle-toggle {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  width: fit-content;
+}
+.recycle-toggle-btn {
+  padding: 12px 32px;
+  border: none;
+  background: none;
+  font-size: 15px;
+  color: #999;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+.recycle-toggle-btn.active {
+  background: #6B5B4E;
+  color: #fff;
+  font-weight: 600;
+}
+.recycle-toggle-btn:hover:not(.active) {
+  color: #6B5B4E;
+}
+.recycle-summary {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.recycle-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.recycle-summary-label {
+  font-size: 12px;
+  color: #999;
+}
+.recycle-summary-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #6B5B4E;
+}
+.recycle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.recycle-card {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: box-shadow 0.2s, transform 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+.recycle-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+.recycle-card-top {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+}
+.recycle-card-image {
+  width: 80px;
+  height: 106px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #F5F1E8;
+  flex-shrink: 0;
+}
+.recycle-card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.recycle-card-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.recycle-card-brand {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+}
+.recycle-card-brand.unknown {
+  color: #ccc;
+}
+.recycle-card-fields {
+  padding: 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.recycle-field-row {
+  display: flex;
+  gap: 8px;
+}
+.recycle-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.recycle-field-label {
+  font-size: 11px;
+  color: #aaa;
+  font-weight: 500;
+}
+.price-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.price-input-prefix {
+  position: absolute;
+  left: 8px;
+  font-size: 13px;
+  color: #ccc;
+  pointer-events: none;
+  z-index: 1;
+}
+.price-input {
+  width: 100%;
+  padding: 6px 8px 6px 22px;
+  border: 1px solid #E0D8C8;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #555;
+  background: #FAFAFA;
+  font-family: inherit;
+  outline: none;
+}
+.price-input:focus {
+  border-color: #4A90D9;
+}
+.recycle-select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #E0D8C8;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #555;
+  background: #FAFAFA;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+}
+.recycle-select:focus {
+  border-color: #4A90D9;
+}
+.status-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+.status-badge.orange {
+  background: #FFF3E0;
+  color: #FB8C00;
+}
+.status-badge.blue {
+  background: #E3F2FD;
+  color: #1976D2;
+}
+.status-badge.green {
+  background: #E8F5E9;
+  color: #43A047;
+}
+.recycle-card-actions {
+  padding: 0 12px 12px;
+  display: flex;
+  gap: 8px;
+}
+.move-back-btn {
+  flex: 1;
+  padding: 8px 16px;
+  background: #fff;
+  color: #6B5B4E;
+  border: 2px solid #E0D8C8;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.move-back-btn:hover {
+  border-color: #6B5B4E;
+  background: #F5F1E8;
+}
+
+/* ========== Toast ========== */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #6B5B4E;
+  color: #fff;
+  padding: 12px 28px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  z-index: 9999;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+}
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 1200px) {
+  .item-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  .wall-grid { grid-template-columns: repeat(3, 1fr); }
+  .recycle-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+}
+@media (max-width: 768px) {
+  .outfit-layout { flex-direction: column; height: auto; }
+  .outfit-sidebar { width: 100%; max-height: 300px; }
+  .wall-grid { grid-template-columns: repeat(2, 1fr); }
+  .item-grid { grid-template-columns: repeat(2, 1fr); }
+  .recycle-grid { grid-template-columns: 1fr; }
+  .tabs { padding: 0 8px; }
+  .tab-btn { padding: 14px 14px; font-size: 13px; }
+  .tab-content { padding: 16px; }
+}
+
+/* ========== Scrollbar ========== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D0C8B8; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #B0A898; }
+
+/* ========== Misc ========== */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #bbb;
+  font-size: 15px;
+}
+.hidden-file-input {
+  display: none;
+}
+</style>
+</head>
+<body>
+
+<!-- ========== Header ========== -->
+<div class="app-header">
+  <div>
+    <div class="app-title">衣橱管理 · Wardrobe Studio</div>
+    <div class="app-subtitle">分类 / 品牌 / 搭配 / 展示 / 回收</div>
+  </div>
+  <div class="item-count-badge" id="item-count-badge">38 件单品</div>
+</div>
+
+<!-- ========== Tabs ========== -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="tab1">分类浏览</button>
+  <button class="tab-btn" data-tab="tab2">品牌浏览</button>
+  <button class="tab-btn" data-tab="tab3">搭配卡</button>
+  <button class="tab-btn" data-tab="tab4">展示墙</button>
+  <button class="tab-btn" data-tab="tab5">回收</button>
+</div>
+
+<!-- ========== Tab 1: 分类浏览 ========== -->
+<div class="tab-content active" id="tab1">
+  <div class="upload-bar">
+    <button class="upload-btn" id="upload-btn" onclick="document.getElementById('file-input').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+      上传单品
+    </button>
+    <div class="upload-counter" id="upload-counter">已上传 0/30 件</div>
+    <div class="upload-progress-wrap" id="upload-progress-wrap">
+      <div class="upload-progress-bar">
+        <div class="upload-progress-fill" id="upload-progress-fill"></div>
+      </div>
+      <div class="upload-progress-text" id="upload-progress-text">处理中...</div>
+    </div>
+    <input type="file" id="file-input" class="hidden-file-input" accept="image/*" multiple>
+  </div>
+  <div class="season-filter" id="season-filter">
+    <button class="season-btn active" data-season="全部">全部</button>
+    <button class="season-btn" data-season="春">春</button>
+    <button class="season-btn" data-season="夏">夏</button>
+    <button class="season-btn" data-season="秋">秋</button>
+    <button class="season-btn" data-season="冬">冬</button>
+    <button class="season-btn" data-season="四季">四季</button>
+  </div>
+  <div id="tab1-content"></div>
+</div>
+
+<!-- ========== Tab 2: 品牌浏览 ========== -->
+<div class="tab-content" id="tab2">
+  <div id="tab2-content"></div>
+</div>
+
+<!-- ========== Tab 3: 搭配卡 ========== -->
+<div class="tab-content" id="tab3">
+  <div class="outfit-layout">
+    <div class="outfit-sidebar" id="outfit-sidebar">
+      <div class="sidebar-title">选择单品</div>
+      <div id="sidebar-categories"></div>
+    </div>
+    <div class="outfit-canvas-area">
+      <div class="outfit-canvas-wrapper">
+        <div id="outfit-canvas">
+          <div class="canvas-empty-hint" id="canvas-hint">从左侧选择单品<br>添加到画布</div>
+          <input type="text" class="outfit-title-input" id="outfit-title" placeholder="点击输入搭配标题...">
+        </div>
+      </div>
+      <div class="outfit-actions">
+        <button class="save-outfit-btn" id="save-outfit">保存搭配卡</button>
+        <button class="clear-canvas-btn" id="clear-canvas">清空画布</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Tab 4: 展示墙 ========== -->
+<div class="tab-content" id="tab4">
+  <div id="tab4-content"></div>
+</div>
+
+<!-- ========== Tab 5: 回收 ========== -->
+<div class="tab-content" id="tab5">
+  <div class="recycle-toggle">
+    <button class="recycle-toggle-btn active" data-recycle-type="sell" id="toggle-sell">二手出售</button>
+    <button class="recycle-toggle-btn" data-recycle-type="donate" id="toggle-donate">捐赠</button>
+  </div>
+  <div id="recycle-summary-area"></div>
+  <div id="recycle-content"></div>
+</div>
+
+<!-- ========== Toast ========== -->
+<div class="toast" id="toast"></div>
+
+<!-- ========== html2canvas for export ========== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+// ========== DATA ==========
+const items = [
+  {"id":"01","slot":"jewelry","label":"白纱花胸针/发饰","color":"白/金","style":"浪漫优雅","seasons":["春","夏"],"file":"jewelry-brooch-white.png"},
+  {"id":"02","slot":"jewelry","label":"花朵编织耳环","color":"米白/香槟金","style":"波西米亚","seasons":["春","夏"],"file":"jewelry-earring-woven.png"},
+  {"id":"03","slot":"jewelry","label":"珍珠花朵耳钉","color":"银白","style":"甜美淑女","seasons":["春","夏"],"file":"jewelry-stud-pearl.png"},
+  {"id":"04","slot":"bottom","label":"黑色高腰瑜伽裤(2条组合)","color":"黑/深灰","style":"运动极简","seasons":["四季"],"file":"bottom-leggings-black-set.png"},
+  {"id":"05","slot":"bottom","label":"黑色高腰瑜伽裤","color":"黑","style":"运动极简","seasons":["四季"],"file":"bottom-leggings-black.png"},
+  {"id":"06","slot":"accessory","label":"驼色毛绒耳罩","color":"驼","style":"简约休闲","seasons":["冬"],"file":"accessory-earmuff-camel.png"},
+  {"id":"07","slot":"accessory","label":"橄榄绿毛绒球鞋饰","color":"橄榄绿","style":"可爱萌系","seasons":["秋","冬"],"file":"accessory-shoecharm-olive.png"},
+  {"id":"08","slot":"bottom","label":"黑色高腰骑行短裤","color":"黑","style":"运动极简","seasons":["春","夏"],"file":"bottom-shorts-black.png"},
+  {"id":"09","slot":"bottom","label":"VANS格纹半身裙","color":"深藏青/白灰格纹","style":"街头学院","seasons":["春","秋","冬"],"file":"bottom-skirt-plaid-navy.png","brand":"VANS"},
+  {"id":"10","slot":"dress","label":"深墨绿挂脖连衣裙","color":"深墨绿/浅金","style":"优雅复古","seasons":["春","夏","秋"],"file":"dress-halter-green.png"},
+  {"id":"11","slot":"shoes","label":"橄榄绿切尔西短靴","color":"橄榄绿","style":"复古工装","seasons":["秋","冬","春"],"file":"shoes-boot-olive.png"},
+  {"id":"12","slot":"outerwear","label":"浅灰绞花短款针织开衫","color":"浅灰","style":"休闲复古","seasons":["秋","春","冬"],"file":"outerwear-cardigan-gray.png","brand":"American Eagle"},
+  {"id":"13","slot":"top","label":"深灰连帽卫衣","color":"深灰","style":"休闲街头","seasons":["春","秋","冬"],"file":"top-hoodie-gray.png"},
+  {"id":"14","slot":"dress","label":"白色抹胸刺绣连衣裙","color":"本白","style":"浪漫田园","seasons":["春","夏"],"file":"dress-tube-white.png"},
+  {"id":"15","slot":"shoes","label":"米杏色低跟凉鞋","color":"米杏","style":"简约通勤","seasons":["春","夏","秋"],"file":"shoes-sandal-beige.png"},
+  {"id":"16","slot":"shoes","label":"米白漆皮玛丽珍单鞋","color":"米白","style":"优雅法式","seasons":["春","夏","秋"],"file":"shoes-maryjane-cream.png","brand":"Charles & Keith"},
+  {"id":"17","slot":"shoes","label":"浅灰运动鞋","color":"浅灰","style":"运动休闲","seasons":["四季"],"file":"shoes-sneaker-gray.png","brand":"Adidas"},
+  {"id":"18","slot":"shoes","label":"深灰中筒粗跟靴","color":"深灰","style":"简约通勤","seasons":["秋","冬"],"file":"shoes-boot-gray.png","brand":"FRYE"},
+  {"id":"19","slot":"shoes","label":"灰绿复古运动鞋","color":"灰绿/粉鞋带","style":"复古运动","seasons":["四季"],"file":"shoes-sneaker-pinkgray.png","brand":"New Balance"},
+  {"id":"20","slot":"shoes","label":"灰褐切尔西短靴","color":"灰褐","style":"简约休闲","seasons":["秋","冬","春"],"file":"shoes-boot-taupe.png"},
+  {"id":"21","slot":"jewelry","label":"鼠尾草绿珍珠花朵耳钉","color":"鼠尾草绿/白珍珠","style":"优雅自然","seasons":["春","夏","秋"],"file":"jewelry-earring-sagegreen.png"},
+  {"id":"22","slot":"jewelry","label":"深绿树脂花朵耳环","color":"深橄榄绿/金","style":"复古华丽","seasons":["四季"],"file":"jewelry-earring-deepgreen.png"},
+  {"id":"23","slot":"jewelry","label":"米白串珠流苏耳环","color":"米白/象牙白","style":"民族风手工","seasons":["四季"],"file":"jewelry-earring-creambead.png"},
+  {"id":"24","slot":"jewelry","label":"绿色毛绒球耳环","color":"橄榄绿/翠绿","style":"波西米亚","seasons":["秋","冬"],"file":"jewelry-earring-greenpom.png"},
+  {"id":"25","slot":"jewelry","label":"奶油白珍珠球耳钉","color":"奶油白/金","style":"优雅简约","seasons":["四季"],"file":"jewelry-stud-creampearl.png"},
+  {"id":"26","slot":"jewelry","label":"复古拼接胸针","color":"金/银/粉/绿/奶白","style":"复古艺术","seasons":["四季"],"file":"jewelry-brooch-vintage.png"},
+  {"id":"27","slot":"accessory","label":"奶油白山茶花配饰","color":"奶油白/黑叶","style":"经典优雅","seasons":["四季"],"file":"accessory-camellia-cream.png"},
+  {"id":"28","slot":"dress","label":"白色解构主义连衣裙","color":"本白","style":"前卫解构","seasons":["春","夏"],"file":"dress-white-deconstruct.png"},
+  {"id":"29","slot":"dress","label":"黑色碎花长袖连衣裙","color":"黑底碎花","style":"复古浪漫","seasons":["春","秋"],"file":"dress-black-floral.png"},
+  {"id":"30","slot":"dress","label":"奶油色碎花短袖连衣裙","color":"奶油底碎花","style":"田园法式","seasons":["春","夏"],"file":"dress-cream-floral.png"},
+  {"id":"31","slot":"dress","label":"奶油色樱桃印花吊带连衣裙","color":"奶油底红樱桃","style":"俏皮复古","seasons":["春","夏"],"file":"dress-cherry-cream.png"},
+  {"id":"32","slot":"top","label":"黑色运动长袖短款上衣","color":"黑","style":"运动机能","seasons":["四季"],"file":"top-crop-black-athletic.png"},
+  {"id":"33","slot":"bottom","label":"橄榄绿A字半身裙","color":"橄榄绿","style":"工装复古","seasons":["秋","春","冬"],"file":"bottom-skirt-olivebelt.png"},
+  {"id":"34","slot":"bottom","label":"浅灰蓝水洗牛仔裤","color":"浅灰蓝","style":"复古休闲","seasons":["四季"],"file":"bottom-jeans-grayblue.png"},
+  {"id":"35","slot":"bottom","label":"浅蓝酸洗牛仔短裤","color":"浅蓝","style":"复古街头","seasons":["春","夏"],"file":"bottom-shorts-denimblue.png"},
+  {"id":"36","slot":"bottom","label":"浅蓝色开衩牛仔裤","color":"浅蓝","style":"现代休闲","seasons":["四季"],"file":"bottom-jeans-splitblue.png"},
+  {"id":"37","slot":"shoes","label":"薄荷绿编织玛丽珍平底鞋","color":"薄荷绿/白","style":"复古法式","seasons":["春","夏","秋"],"file":"shoes-maryjane-sage.png"},
+  {"id":"38","slot":"shoes","label":"深灰短靴","color":"深灰/碳灰","style":"简约通勤","seasons":["秋","冬","春"],"file":"shoes-boot-charcoal.png","brand":"Enzo Angiolini"}
+];
+
+// ========== CONFIG ==========
+const slotOrder = ['dress','top','outerwear','bottom','shoes','bag','hat','jewelry','accessory','scarf','socks'];
+const slotLabels = {
+  dress: '连衣裙', top: '上装', outerwear: '外套', bottom: '下装',
+  shoes: '鞋', bag: '包', hat: '帽子', jewelry: '首饰',
+  accessory: '配饰', scarf: '丝巾', socks: '袜子'
+};
+const seasonColors = {
+  '春': { bg: '#E8F5E9', text: '#43A047' },
+  '夏': { bg: '#FFF3E0', text: '#FB8C00' },
+  '秋': { bg: '#FBE9E7', text: '#D84315' },
+  '冬': { bg: '#E3F2FD', text: '#1976D2' },
+  '四季': { bg: '#ECEFF1', text: '#546E7A' }
+};
+const knownBrands = ['VANS','American Eagle','Charles & Keith','Adidas','FRYE','New Balance','Enzo Angiolini'];
+
+// Recycle config
+const conditionOptions = ['全新','9成新','8成新','7成新','6成新及以下'];
+const channelOptions = ['闲鱼','转转','朋友圈','其他'];
+const sellStatusOptions = ['待出售','已上架','已售出'];
+const donateOrgOptions = ['爱心衣救','白鲸鱼','飞蚂蚁','其他'];
+const donateStatusOptions = ['待捐赠','已捐赠'];
+const statusColors = {
+  '待出售': 'orange',
+  '已上架': 'blue',
+  '已售出': 'green',
+  '待捐赠': 'orange',
+  '已捐赠': 'green'
+};
+
+// ========== STATE ==========
+let currentSeason = '全部';
+let deletedIds = new Set();
+let canvasItems = [];
+let zCounter = 1;
+let dragState = null;
+let recycle = [];
+let currentRecycleType = 'sell';
+let uploadedCount = 0;
+
+// ========== HELPERS ==========
+function getImagePath(file) {
+  return 'closet-studio/' + file.replace('.png', '') + '-card.png';
+}
+
+function getItemImage(item) {
+  if (item.imagePreview) return item.imagePreview;
+  return getImagePath(item.file);
+}
+
+function getActiveItems() {
+  return items.filter(function(item) { return !deletedIds.has(item.id); });
+}
+
+function createSeasonTagsHTML(seasons) {
+  return seasons.map(function(s) {
+    var c = seasonColors[s] || seasonColors['四季'];
+    return '<span class="season-tag" style="background:' + c.bg + ';color:' + c.text + '">' + s + '</span>';
+  }).join('');
+}
+
+function updateItemCount() {
+  var count = getActiveItems().length;
+  document.getElementById('item-count-badge').textContent = count + ' 件单品';
+}
+
+function getNextId() {
+  var maxNum = 0;
+  items.forEach(function(item) {
+    var num = parseInt(item.id, 10);
+    if (!isNaN(num) && num > maxNum) maxNum = num;
+  });
+  var nextNum = maxNum + 1;
+  return nextNum < 10 ? '0' + nextNum : '' + nextNum;
+}
+
+// ========== TOAST ==========
+var toastTimer = null;
+function showToast(message) {
+  var toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() {
+    toast.classList.remove('show');
+  }, 2200);
+}
+
+// ========== BULK UPLOAD ==========
+function handleFileUpload(event) {
+  var files = Array.from(event.target.files);
+  if (files.length === 0) return;
+
+  // Limit to 30
+  var filesToProcess = files.slice(0, 30);
+  var total = filesToProcess.length;
+
+  var progressWrap = document.getElementById('upload-progress-wrap');
+  var progressFill = document.getElementById('upload-progress-fill');
+  var progressText = document.getElementById('upload-progress-text');
+  var counter = document.getElementById('upload-counter');
+
+  progressWrap.classList.add('active');
+  progressFill.style.width = '0%';
+  progressText.textContent = '处理中 0/' + total;
+
+  var processed = 0;
+
+  function processNext(index) {
+    if (index >= total) {
+      progressFill.style.width = '100%';
+      progressText.textContent = '完成 ' + total + '/' + total;
+      setTimeout(function() {
+        progressWrap.classList.remove('active');
+      }, 1500);
+      uploadedCount += total;
+      counter.textContent = '已上传 ' + uploadedCount + '/30 件';
+      counter.classList.add('highlight');
+      renderTab1();
+      renderTab2();
+      renderTab4();
+      renderSidebar();
+      updateItemCount();
+      showToast('成功上传 ' + total + ' 件单品');
+      // Reset file input so same file can be selected again
+      event.target.value = '';
+      return;
+    }
+
+    var file = filesToProcess[index];
+    var label = file.name.replace(/\.[^.]+$/, '');
+    var newId = getNextId();
+
+    var newItem = {
+      id: newId,
+      slot: 'accessory',
+      label: label,
+      brand: '',
+      seasons: ['四季'],
+      file: 'uploaded-' + newId + '.png',
+      imagePreview: URL.createObjectURL(file),
+      uploaded: true
+    };
+
+    items.push(newItem);
+
+    processed++;
+    var percent = Math.round((processed / total) * 100);
+    progressFill.style.width = percent + '%';
+    progressText.textContent = '处理中 ' + processed + '/' + total;
+
+    // Use setTimeout to let UI update
+    setTimeout(function() {
+      processNext(index + 1);
+    }, 50);
+  }
+
+  processNext(0);
+}
+
+// ========== TAB 1: 分类浏览 ==========
+function renderTab1() {
+  var container = document.getElementById('tab1-content');
+  var activeItems = getActiveItems();
+  var filtered = currentSeason === '全部'
+    ? activeItems
+    : activeItems.filter(function(item) { return item.seasons.indexOf(currentSeason) !== -1; });
+
+  var html = '';
+  slotOrder.forEach(function(slot) {
+    var slotItems = filtered.filter(function(item) { return item.slot === slot; });
+    if (slotItems.length === 0) return;
+
+    html += '<div class="category-section">';
+    html += '<div class="category-header">' + slotLabels[slot] + ' <span class="category-count">' + slotItems.length + ' 件</span></div>';
+    html += '<div class="item-grid">';
+    slotItems.forEach(function(item) {
+      html += renderItemCardTab1(item);
+    });
+    html += '</div></div>';
+  });
+
+  if (filtered.length === 0) {
+    html = '<div class="empty-state">该季节下暂无单品</div>';
+  }
+  container.innerHTML = html;
+}
+
+function renderItemCardTab1(item) {
+  var brandClass = item.brand ? '' : 'unknown';
+  var brandText = item.brand || '未知品牌';
+  var slotOptions = slotOrder.map(function(s) {
+    return '<option value="' + s + '"' + (s === item.slot ? ' selected' : '') + '>' + slotLabels[s] + '</option>';
+  }).join('');
+
+  return '<div class="item-card" data-id="' + item.id + '">' +
+    '<img src="' + getItemImage(item) + '" alt="' + item.label + '" class="item-card-image" loading="lazy" onerror="this.style.opacity=0.25">' +
+    '<div class="item-card-body">' +
+      '<div class="item-card-label" title="' + item.label + '">' + item.label + '</div>' +
+      '<div class="item-card-brand ' + brandClass + '">' + brandText + '</div>' +
+      '<div class="item-card-seasons">' + createSeasonTagsHTML(item.seasons) + '</div>' +
+    '</div>' +
+    '<div class="item-card-actions">' +
+      '<select class="slot-select" onchange="changeSlot(\'' + item.id + '\', this.value)">' + slotOptions + '</select>' +
+      '<button class="recycle-btn" onclick="moveToRecycle(\'' + item.id + '\')" title="回收">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>' +
+      '</button>' +
+      '<button class="delete-btn" onclick="deleteItem(\'' + item.id + '\')" title="删除">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>' +
+      '</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function changeSlot(id, newSlot) {
+  var item = items.find(function(i) { return i.id === id; });
+  if (item) {
+    item.slot = newSlot;
+    renderTab1();
+    renderSidebar();
+    renderTab4();
+  }
+}
+
+function deleteItem(id) {
+  var item = items.find(function(i) { return i.id === id; });
+  if (!item) return;
+  if (confirm('确定删除「' + item.label + '」吗？')) {
+    deletedIds.add(id);
+    removeFromCanvas(id);
+    renderTab1();
+    renderTab2();
+    renderTab4();
+    renderSidebar();
+    updateItemCount();
+  }
+}
+
+// ========== RECYCLE FUNCTIONS ==========
+function moveToRecycle(id) {
+  var item = items.find(function(i) { return i.id === id; });
+  if (!item) return;
+
+  var recycleItem = {
+    id: item.id,
+    slot: item.slot,
+    label: item.label,
+    color: item.color || '',
+    style: item.style || '',
+    seasons: item.seasons ? item.seasons.slice() : ['四季'],
+    file: item.file || '',
+    brand: item.brand || '',
+    imagePreview: item.imagePreview || '',
+    uploaded: item.uploaded || false,
+    recycleType: currentRecycleType,
+    originalPrice: '',
+    sellingPrice: '',
+    condition: '8成新',
+    channel: '闲鱼',
+    sellStatus: '待出售',
+    donateOrg: '爱心衣救',
+    donateStatus: '待捐赠'
+  };
+
+  recycle.push(recycleItem);
+  deletedIds.add(id);
+  removeFromCanvas(id);
+
+  renderTab1();
+  renderTab2();
+  renderTab4();
+  renderSidebar();
+  updateItemCount();
+  showToast('已移至回收');
+}
+
+function moveBackToWardrobe(recycleId) {
+  var idx = recycle.findIndex(function(r) { return r.id === recycleId; });
+  if (idx === -1) return;
+
+  var rItem = recycle[idx];
+  // Find the original item in items array
+  var item = items.find(function(i) { return i.id === recycleId; });
+  if (item) {
+    deletedIds.delete(recycleId);
+  }
+
+  recycle.splice(idx, 1);
+  renderTab1();
+  renderTab2();
+  renderTab4();
+  renderSidebar();
+  updateItemCount();
+  renderTab5();
+  showToast('已移回衣橱');
+}
+
+function updateRecycleItem(recycleId, field, value) {
+  var rItem = recycle.find(function(r) { return r.id === recycleId; });
+  if (!rItem) return;
+  rItem[field] = value;
+  // Re-render summary to update totals
+  renderRecycleSummary();
+}
+
+// ========== TAB 2: 品牌浏览 ==========
+function renderTab2() {
+  var container = document.getElementById('tab2-content');
+  var activeItems = getActiveItems();
+
+  var brandGroups = {};
+  activeItems.forEach(function(item) {
+    var brand = item.brand || '[未知品牌]';
+    if (!brandGroups[brand]) brandGroups[brand] = [];
+    brandGroups[brand].push(item);
+  });
+
+  var orderedBrands = knownBrands.filter(function(b) { return brandGroups[b]; });
+  if (brandGroups['[未知品牌]']) orderedBrands.push('[未知品牌]');
+  Object.keys(brandGroups).forEach(function(b) {
+    if (orderedBrands.indexOf(b) === -1) orderedBrands.push(b);
+  });
+
+  var html = '';
+  orderedBrands.forEach(function(brand) {
+    var brandItems = brandGroups[brand];
+    html += '<div class="brand-section">';
+    html += '<div class="brand-header">' + brand + ' <span class="category-count">' + brandItems.length + ' 件</span></div>';
+    html += '<div class="item-grid">';
+    brandItems.forEach(function(item) {
+      html += renderItemCardTab2(item, brand);
+    });
+    html += '</div></div>';
+  });
+
+  if (orderedBrands.length === 0) {
+    html = '<div class="empty-state">暂无单品</div>';
+  }
+  container.innerHTML = html;
+}
+
+function renderItemCardTab2(item, brand) {
+  var isUnknown = brand === '[未知品牌]';
+  var brandDisplay = item.brand || '[未知品牌]';
+
+  return '<div class="item-card" data-id="' + item.id + '">' +
+    '<img src="' + getItemImage(item) + '" alt="' + item.label + '" class="item-card-image" loading="lazy" onerror="this.style.opacity=0.25">' +
+    '<div class="item-card-body">' +
+      '<div class="item-card-label" title="' + item.label + '">' + item.label + '</div>' +
+      '<div class="item-card-brand editable ' + (isUnknown ? 'unknown' : '') + '" onclick="editBrand(\'' + item.id + '\', this)" title="点击编辑品牌">' + brandDisplay + '</div>' +
+      '<div class="item-card-slot">' + slotLabels[item.slot] + '</div>' +
+      '<div class="item-card-seasons">' + createSeasonTagsHTML(item.seasons) + '</div>' +
+    '</div>' +
+    '<div class="item-card-actions">' +
+      '<button class="recycle-btn" onclick="moveToRecycle(\'' + item.id + '\')" title="回收" style="flex:1;">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>' +
+        '<span style="font-size:12px;">回收</span>' +
+      '</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function editBrand(id, element) {
+  var item = items.find(function(i) { return i.id === id; });
+  if (!item) return;
+
+  var currentBrand = item.brand || '';
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'brand-edit-input';
+  input.value = currentBrand;
+  input.placeholder = '输入品牌名';
+
+  element.replaceWith(input);
+  input.focus();
+  input.select();
+
+  var saved = false;
+  function save() {
+    if (saved) return;
+    saved = true;
+    var newBrand = input.value.trim();
+    item.brand = newBrand || undefined;
+    renderTab2();
+  }
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      save();
+    } else if (e.key === 'Escape') {
+      saved = true;
+      renderTab2();
+    }
+  });
+  input.addEventListener('blur', save);
+}
+
+// ========== TAB 3: 搭配卡 ==========
+function renderSidebar() {
+  var container = document.getElementById('sidebar-categories');
+  var activeItems = getActiveItems();
+
+  var html = '';
+  slotOrder.forEach(function(slot) {
+    var slotItems = activeItems.filter(function(item) { return item.slot === slot; });
+    if (slotItems.length === 0) return;
+
+    html += '<div class="sidebar-category">';
+    html += '<div class="sidebar-category-title">' + slotLabels[slot] + '</div>';
+    html += '<div class="sidebar-items">';
+    slotItems.forEach(function(item) {
+      var isAdded = canvasItems.some(function(ci) { return ci.id === item.id; });
+      var onclickAttr = isAdded ? '' : ' onclick="addToCanvas(\'' + item.id + '\')"';
+      html += '<div class="sidebar-item' + (isAdded ? ' added' : '') + '" data-id="' + item.id + '" title="' + item.label + '"' + onclickAttr + '>' +
+        '<img src="' + getItemImage(item) + '" alt="' + item.label + '" loading="lazy" onerror="this.style.opacity=0.25">' +
+      '</div>';
+    });
+    html += '</div></div>';
+  });
+
+  if (html === '') {
+    html = '<div class="empty-state" style="padding:40px 10px;">暂无单品</div>';
+  }
+  container.innerHTML = html;
+}
+
+function addToCanvas(id) {
+  if (canvasItems.some(function(ci) { return ci.id === id; })) return;
+
+  var item = items.find(function(i) { return i.id === id; });
+  if (!item) return;
+
+  var canvas = document.getElementById('outfit-canvas');
+  var canvasRect = canvas.getBoundingClientRect();
+
+  var offset = (canvasItems.length % 5) * 25;
+  var x = canvasRect.width / 2 - 75 + offset;
+  var y = canvasRect.height / 4 + offset;
+
+  zCounter++;
+  var canvasItem = {
+    id: id,
+    x: x,
+    y: y,
+    width: 150,
+    z: zCounter,
+    aspectRatio: 0.75
+  };
+  canvasItems.push(canvasItem);
+
+  var el = document.createElement('div');
+  el.className = 'canvas-item';
+  el.dataset.id = id;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.style.width = '150px';
+  el.style.zIndex = zCounter;
+
+  var img = document.createElement('img');
+  img.src = getItemImage(item);
+  img.alt = item.label;
+  img.draggable = false;
+  img.onload = function() {
+    canvasItem.aspectRatio = (img.naturalWidth / img.naturalHeight) || 0.75;
+    el.style.height = (150 / canvasItem.aspectRatio) + 'px';
+  };
+  el.appendChild(img);
+
+  var closeBtn = document.createElement('button');
+  closeBtn.className = 'canvas-item-close';
+  closeBtn.innerHTML = '&times;';
+  closeBtn.title = '移除';
+  el.appendChild(closeBtn);
+
+  var resizeHandle = document.createElement('div');
+  resizeHandle.className = 'canvas-item-resize';
+  resizeHandle.title = '拖拽调整大小';
+  el.appendChild(resizeHandle);
+
+  canvas.appendChild(el);
+
+  document.getElementById('canvas-hint').style.display = 'none';
+
+  renderSidebar();
+}
+
+function removeFromCanvas(id) {
+  canvasItems = canvasItems.filter(function(ci) { return ci.id !== id; });
+  var el = document.querySelector('.canvas-item[data-id="' + id + '"]');
+  if (el) el.remove();
+
+  if (canvasItems.length === 0) {
+    document.getElementById('canvas-hint').style.display = 'block';
+  }
+  renderSidebar();
+}
+
+function clearCanvas() {
+  canvasItems = [];
+  var canvas = document.getElementById('outfit-canvas');
+  canvas.querySelectorAll('.canvas-item').forEach(function(el) { el.remove(); });
+  document.getElementById('canvas-hint').style.display = 'block';
+  renderSidebar();
+}
+
+function setupCanvasInteraction() {
+  var canvas = document.getElementById('outfit-canvas');
+
+  canvas.addEventListener('mousedown', function(e) {
+    var itemEl = e.target.closest('.canvas-item');
+    if (!itemEl) return;
+
+    var id = itemEl.dataset.id;
+    var canvasItem = canvasItems.find(function(ci) { return ci.id === id; });
+    if (!canvasItem) return;
+
+    if (e.target.classList.contains('canvas-item-close')) {
+      removeFromCanvas(id);
+      return;
+    }
+
+    zCounter++;
+    itemEl.style.zIndex = zCounter;
+    canvasItem.z = zCounter;
+
+    var canvasRect = canvas.getBoundingClientRect();
+
+    if (e.target.classList.contains('canvas-item-resize')) {
+      var rect = itemEl.getBoundingClientRect();
+      dragState = {
+        type: 'resize',
+        element: itemEl,
+        id: id,
+        startX: e.clientX,
+        startWidth: rect.width
+      };
+    } else {
+      var rect2 = itemEl.getBoundingClientRect();
+      dragState = {
+        type: 'drag',
+        element: itemEl,
+        id: id,
+        offsetX: e.clientX - rect2.left,
+        offsetY: e.clientY - rect2.top,
+        canvasRect: canvasRect
+      };
+    }
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!dragState) return;
+
+    if (dragState.type === 'drag') {
+      var x = e.clientX - dragState.offsetX - dragState.canvasRect.left;
+      var y = e.clientY - dragState.offsetY - dragState.canvasRect.top;
+
+      var elWidth = dragState.element.offsetWidth;
+      var elHeight = dragState.element.offsetHeight;
+      x = Math.max(-elWidth / 3, Math.min(x, dragState.canvasRect.width - elWidth * 2 / 3));
+      y = Math.max(-elHeight / 3, Math.min(y, dragState.canvasRect.height - elHeight * 2 / 3));
+
+      dragState.element.style.left = x + 'px';
+      dragState.element.style.top = y + 'px';
+
+      var ci = canvasItems.find(function(c) { return c.id === dragState.id; });
+      if (ci) { ci.x = x; ci.y = y; }
+    } else if (dragState.type === 'resize') {
+      var dx = e.clientX - dragState.startX;
+      var ci = canvasItems.find(function(c) { return c.id === dragState.id; });
+      var aspectRatio = ci ? ci.aspectRatio : 0.75;
+
+      var newWidth = Math.max(50, dragState.startWidth + dx);
+      var newHeight = newWidth / aspectRatio;
+
+      dragState.element.style.width = newWidth + 'px';
+      dragState.element.style.height = newHeight + 'px';
+
+      if (ci) { ci.width = newWidth; }
+    }
+  });
+
+  document.addEventListener('mouseup', function() {
+    dragState = null;
+  });
+
+  canvas.addEventListener('touchstart', function(e) {
+    var touch = e.touches[0];
+    var target = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!target) return;
+    var itemEl = target.closest('.canvas-item');
+    if (!itemEl) return;
+
+    var id = itemEl.dataset.id;
+    var canvasItem = canvasItems.find(function(ci) { return ci.id === id; });
+    if (!canvasItem) return;
+
+    if (target.classList.contains('canvas-item-close')) {
+      removeFromCanvas(id);
+      return;
+    }
+
+    zCounter++;
+    itemEl.style.zIndex = zCounter;
+    canvasItem.z = zCounter;
+
+    var canvasRect = canvas.getBoundingClientRect();
+    var rect = itemEl.getBoundingClientRect();
+
+    if (target.classList.contains('canvas-item-resize')) {
+      dragState = {
+        type: 'resize',
+        element: itemEl,
+        id: id,
+        startX: touch.clientX,
+        startWidth: rect.width
+      };
+    } else {
+      dragState = {
+        type: 'drag',
+        element: itemEl,
+        id: id,
+        offsetX: touch.clientX - rect.left,
+        offsetY: touch.clientY - rect.top,
+        canvasRect: canvasRect
+      };
+    }
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!dragState) return;
+    var touch = e.touches[0];
+
+    if (dragState.type === 'drag') {
+      var x = touch.clientX - dragState.offsetX - dragState.canvasRect.left;
+      var y = touch.clientY - dragState.offsetY - dragState.canvasRect.top;
+      dragState.element.style.left = x + 'px';
+      dragState.element.style.top = y + 'px';
+    } else if (dragState.type === 'resize') {
+      var dx = touch.clientX - dragState.startX;
+      var ci = canvasItems.find(function(c) { return c.id === dragState.id; });
+      var ar = ci ? ci.aspectRatio : 0.75;
+      var nw = Math.max(50, dragState.startWidth + dx);
+      dragState.element.style.width = nw + 'px';
+      dragState.element.style.height = (nw / ar) + 'px';
+    }
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchend', function() {
+    dragState = null;
+  });
+}
+
+function exportOutfitCard() {
+  var canvas = document.getElementById('outfit-canvas');
+  var titleInput = document.getElementById('outfit-title');
+  var title = titleInput.value || '搭配卡';
+
+  if (canvasItems.length === 0) {
+    alert('请先从左侧添加单品到画布');
+    return;
+  }
+
+  if (typeof html2canvas === 'undefined') {
+    alert('html2canvas 未加载，无法导出图片。\n请确保网络连接正常后刷新页面重试。');
+    return;
+  }
+
+  var controls = canvas.querySelectorAll('.canvas-item-close, .canvas-item-resize');
+  controls.forEach(function(c) { c.style.visibility = 'hidden'; });
+
+  var titleValue = titleInput.value.trim();
+  var titleDiv = null;
+  if (titleValue) {
+    titleDiv = document.createElement('div');
+    titleDiv.style.position = 'absolute';
+    titleDiv.style.bottom = '14px';
+    titleDiv.style.left = '50%';
+    titleDiv.style.transform = 'translateX(-50%)';
+    titleDiv.style.width = '80%';
+    titleDiv.style.textAlign = 'center';
+    titleDiv.style.fontSize = '16px';
+    titleDiv.style.fontWeight = '600';
+    titleDiv.style.color = '#6B5B4E';
+    titleDiv.style.fontFamily = 'inherit';
+    titleDiv.style.zIndex = '1';
+    titleDiv.style.padding = '8px 16px';
+    titleDiv.style.borderBottom = '2px solid rgba(107, 91, 78, 0.25)';
+    titleDiv.textContent = titleValue;
+    canvas.appendChild(titleDiv);
+    titleInput.style.visibility = 'hidden';
+  }
+
+  html2canvas(canvas, {
+    backgroundColor: '#F5F1E8',
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+    logging: false
+  }).then(function(canvasEl) {
+    controls.forEach(function(c) { c.style.visibility = ''; });
+    titleInput.style.visibility = '';
+    if (titleDiv) titleDiv.remove();
+
+    var link = document.createElement('a');
+    link.download = title + '.png';
+    link.href = canvasEl.toDataURL('image/png');
+    link.click();
+  }).catch(function(err) {
+    controls.forEach(function(c) { c.style.visibility = ''; });
+    titleInput.style.visibility = '';
+    if (titleDiv) titleDiv.remove();
+    console.error('Export failed:', err);
+    alert('导出失败: ' + err.message);
+  });
+}
+
+// ========== TAB 4: 展示墙 ==========
+function renderTab4() {
+  var container = document.getElementById('tab4-content');
+  var activeItems = getActiveItems();
+
+  var html = '';
+  slotOrder.forEach(function(slot) {
+    var slotItems = activeItems.filter(function(item) { return item.slot === slot; });
+    if (slotItems.length === 0) return;
+
+    html += '<div class="category-section">';
+    html += '<div class="category-header">' + slotLabels[slot] + ' <span class="category-count">' + slotItems.length + ' 件</span></div>';
+    html += '<div class="wall-grid">';
+    slotItems.forEach(function(item) {
+      var brandText = item.brand || '未知品牌';
+      var brandClass = item.brand ? '' : 'unknown';
+      html += '<div class="wall-card">' +
+        '<img src="' + getItemImage(item) + '" alt="' + item.label + '" loading="lazy" onerror="this.style.opacity=0.25">' +
+        '<div class="wall-card-body">' +
+          '<div class="wall-card-label" title="' + item.label + '">' + item.label + '</div>' +
+          '<div class="wall-card-brand ' + brandClass + '">' + brandText + '</div>' +
+        '</div>' +
+      '</div>';
+    });
+    html += '</div></div>';
+  });
+
+  if (html === '') {
+    html = '<div class="empty-state">暂无单品</div>';
+  }
+  container.innerHTML = html;
+}
+
+// ========== TAB 5: 回收 ==========
+function renderTab5() {
+  renderRecycleSummary();
+  renderRecycleContent();
+}
+
+function renderRecycleSummary() {
+  var container = document.getElementById('recycle-summary-area');
+
+  if (currentRecycleType === 'sell') {
+    var sellItems = recycle.filter(function(r) { return r.recycleType === 'sell'; });
+    var totalRevenue = 0;
+    sellItems.forEach(function(r) {
+      var price = parseFloat(r.sellingPrice);
+      if (!isNaN(price)) totalRevenue += price;
+    });
+
+    container.innerHTML =
+      '<div class="recycle-summary">' +
+        '<div class="recycle-summary-item">' +
+          '<div class="recycle-summary-label">出售中单品</div>' +
+          '<div class="recycle-summary-value">' + sellItems.length + ' 件</div>' +
+        '</div>' +
+        '<div class="recycle-summary-item">' +
+          '<div class="recycle-summary-label">预计总收入</div>' +
+          '<div class="recycle-summary-value">¥' + totalRevenue.toFixed(2) + '</div>' +
+        '</div>' +
+      '</div>';
+  } else {
+    var donateItems = recycle.filter(function(r) { return r.recycleType === 'donate'; });
+
+    container.innerHTML =
+      '<div class="recycle-summary">' +
+        '<div class="recycle-summary-item">' +
+          '<div class="recycle-summary-label">待捐赠单品</div>' +
+          '<div class="recycle-summary-value">' + donateItems.length + ' 件</div>' +
+        '</div>' +
+      '</div>';
+  }
+}
+
+function renderRecycleContent() {
+  var container = document.getElementById('recycle-content');
+  var filtered = recycle.filter(function(r) { return r.recycleType === currentRecycleType; });
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state">' +
+      (currentRecycleType === 'sell' ? '暂无二手出售单品<br>在分类浏览或品牌浏览中点击"回收"按钮即可移入' : '暂无捐赠单品<br>在分类浏览或品牌浏览中点击"回收"按钮即可移入') +
+    '</div>';
+    return;
+  }
+
+  var html = '<div class="recycle-grid">';
+  filtered.forEach(function(r) {
+    if (currentRecycleType === 'sell') {
+      html += renderSellCard(r);
+    } else {
+      html += renderDonateCard(r);
+    }
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function renderSellCard(r) {
+  var brandText = r.brand || '未知品牌';
+  var brandClass = r.brand ? '' : 'unknown';
+  var statusColor = statusColors[r.sellStatus] || 'orange';
+
+  var conditionOpts = conditionOptions.map(function(c) {
+    return '<option value="' + c + '"' + (c === r.condition ? ' selected' : '') + '>' + c + '</option>';
+  }).join('');
+  var channelOpts = channelOptions.map(function(c) {
+    return '<option value="' + c + '"' + (c === r.channel ? ' selected' : '') + '>' + c + '</option>';
+  }).join('');
+  var sellStatusOpts = sellStatusOptions.map(function(s) {
+    return '<option value="' + s + '"' + (s === r.sellStatus ? ' selected' : '') + '>' + s + '</option>';
+  }).join('');
+
+  return '<div class="recycle-card" data-id="' + r.id + '">' +
+    '<div class="recycle-card-top">' +
+      '<img src="' + getItemImage(r) + '" alt="' + r.label + '" class="recycle-card-image" onerror="this.style.opacity=0.25">' +
+      '<div class="recycle-card-info">' +
+        '<div class="recycle-card-label" title="' + r.label + '">' + r.label + '</div>' +
+        '<div class="recycle-card-brand ' + brandClass + '">' + brandText + '</div>' +
+        '<span class="status-badge ' + statusColor + '">' + r.sellStatus + '</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="recycle-card-fields">' +
+      '<div class="recycle-field-row">' +
+        '<div class="recycle-field">' +
+          '<div class="recycle-field-label">原价</div>' +
+          '<div class="price-input-wrap">' +
+            '<span class="price-input-prefix">¥</span>' +
+            '<input type="number" class="price-input" placeholder="0" value="' + (r.originalPrice || '') + '" onchange="updateRecycleItem(\'' + r.id + '\', \'originalPrice\', this.value)">' +
+          '</div>' +
+        '</div>' +
+        '<div class="recycle-field">' +
+          '<div class="recycle-field-label">出售价格</div>' +
+          '<div class="price-input-wrap">' +
+            '<span class="price-input-prefix">¥</span>' +
+            '<input type="number" class="price-input" placeholder="0" value="' + (r.sellingPrice || '') + '" onchange="updateRecycleItem(\'' + r.id + '\', \'sellingPrice\', this.value)">' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="recycle-field-row">' +
+        '<div class="recycle-field">' +
+          '<div class="recycle-field-label">成色</div>' +
+          '<select class="recycle-select" onchange="updateRecycleItem(\'' + r.id + '\', \'condition\', this.value)">' + conditionOpts + '</select>' +
+        '</div>' +
+        '<div class="recycle-field">' +
+          '<div class="recycle-field-label">出售渠道</div>' +
+          '<select class="recycle-select" onchange="updateRecycleItem(\'' + r.id + '\', \'channel\', this.value)">' + channelOpts + '</select>' +
+        '</div>' +
+      '</div>' +
+      '<div class="recycle-field">' +
+        '<div class="recycle-field-label">状态</div>' +
+        '<select class="recycle-select" onchange="updateRecycleItem(\'' + r.id + '\', \'sellStatus\', this.value); renderTab5();">' + sellStatusOpts + '</select>' +
+      '</div>' +
+    '</div>' +
+    '<div class="recycle-card-actions">' +
+      '<button class="move-back-btn" onclick="moveBackToWardrobe(\'' + r.id + '\')">移回衣橱</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderDonateCard(r) {
+  var brandText = r.brand || '未知品牌';
+  var brandClass = r.brand ? '' : 'unknown';
+  var statusColor = statusColors[r.donateStatus] || 'orange';
+
+  var orgOpts = donateOrgOptions.map(function(o) {
+    return '<option value="' + o + '"' + (o === r.donateOrg ? ' selected' : '') + '>' + o + '</option>';
+  }).join('');
+  var donateStatusOpts = donateStatusOptions.map(function(s) {
+    return '<option value="' + s + '"' + (s === r.donateStatus ? ' selected' : '') + '>' + s + '</option>';
+  }).join('');
+
+  return '<div class="recycle-card" data-id="' + r.id + '">' +
+    '<div class="recycle-card-top">' +
+      '<img src="' + getItemImage(r) + '" alt="' + r.label + '" class="recycle-card-image" onerror="this.style.opacity=0.25">' +
+      '<div class="recycle-card-info">' +
+        '<div class="recycle-card-label" title="' + r.label + '">' + r.label + '</div>' +
+        '<div class="recycle-card-brand ' + brandClass + '">' + brandText + '</div>' +
+        '<span class="status-badge ' + statusColor + '">' + r.donateStatus + '</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="recycle-card-fields">' +
+      '<div class="recycle-field">' +
+        '<div class="recycle-field-label">捐赠机构</div>' +
+        '<select class="recycle-select" onchange="updateRecycleItem(\'' + r.id + '\', \'donateOrg\', this.value)">' + orgOpts + '</select>' +
+      '</div>' +
+      '<div class="recycle-field">' +
+        '<div class="recycle-field-label">捐赠状态</div>' +
+        '<select class="recycle-select" onchange="updateRecycleItem(\'' + r.id + '\', \'donateStatus\', this.value); renderTab5();">' + donateStatusOpts + '</select>' +
+      '</div>' +
+    '</div>' +
+    '<div class="recycle-card-actions">' +
+      '<button class="move-back-btn" onclick="moveBackToWardrobe(\'' + r.id + '\')">移回衣橱</button>' +
+    '</div>' +
+  '</div>';
+}
+
+// ========== TAB SWITCHING ==========
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.tab === tabId);
+  });
+  document.querySelectorAll('.tab-content').forEach(function(content) {
+    content.classList.toggle('active', content.id === tabId);
+  });
+  if (tabId === 'tab5') {
+    renderTab5();
+  }
+}
+
+// ========== INIT ==========
+function init() {
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { switchTab(btn.dataset.tab); });
+  });
+
+  // Season filter
+  document.querySelectorAll('.season-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.season-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentSeason = btn.dataset.season;
+      renderTab1();
+    });
+  });
+
+  // File upload
+  document.getElementById('file-input').addEventListener('change', handleFileUpload);
+
+  // Recycle toggle
+  document.querySelectorAll('.recycle-toggle-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.recycle-toggle-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentRecycleType = btn.dataset.recycleType;
+      renderTab5();
+    });
+  });
+
+  // Save outfit
+  document.getElementById('save-outfit').addEventListener('click', exportOutfitCard);
+
+  // Clear canvas
+  document.getElementById('clear-canvas').addEventListener('click', function() {
+    if (confirm('确定清空画布吗？')) clearCanvas();
+  });
+
+  // Canvas interaction
+  setupCanvasInteraction();
+
+  // Render all tabs
+  renderTab1();
+  renderTab2();
+  renderSidebar();
+  renderTab4();
+  renderTab5();
+  updateItemCount();
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "created": "2026-07-29",
+  "source": "example",
+  "items": [
+    {
+      "id": "01",
+      "photo": "photo01",
+      "slot": "dress",
+      "label": "深墨绿挂脖连衣裙",
+      "color": "深墨绿",
+      "style": "优雅复古",
+      "seasons": ["春", "夏", "秋"],
+      "file": "dress-halter-green.png",
+      "source": "beautified",
+      "brand": "",
+      "features": ["挂脖", "无袖", "提花织锦", "修身剪裁"]
+    },
+    {
+      "id": "02",
+      "photo": "photo02",
+      "slot": "shoes",
+      "label": "米白漆皮玛丽珍单鞋",
+      "color": "米白",
+      "style": "优雅法式",
+      "seasons": ["春", "夏", "秋"],
+      "file": "shoes-maryjane-cream.png",
+      "source": "cutout",
+      "brand": "Charles & Keith",
+      "features": ["玛丽珍", "漆皮", "金扣", "圆头"]
+    },
+    {
+      "id": "03",
+      "photo": "photo03",
+      "slot": "jewelry",
+      "label": "奶油白珍珠球耳钉",
+      "color": "奶油白",
+      "style": "优雅简约",
+      "seasons": ["四季"],
+      "file": "jewelry-stud-creampearl.png",
+      "source": "cutout"
+    }
+  ]
+}

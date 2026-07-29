@@ -1,0 +1,37 @@
+{
+  "title": "法式复古通勤",
+  "canvas": [1152, 2048],
+  "items": [
+    {
+      "image": "items/dress-halter-green.png",
+      "id": "item10",
+      "label": "深墨绿挂脖连衣裙",
+      "slot": "dress"
+    },
+    {
+      "image": "items/shoes-maryjane-cream.png",
+      "id": "item16",
+      "label": "米白漆皮玛丽珍",
+      "slot": "shoes"
+    },
+    {
+      "image": "items/jewelry-stud-creampearl.png",
+      "id": "item25",
+      "label": "奶油白珍珠耳钉",
+      "slot": "jewelry"
+    },
+    {
+      "image": "items/bag-canvas-beige.png",
+      "id": "item40",
+      "label": "米杏帆布托特包",
+      "slot": "bag",
+      "layout": {
+        "x": 0.55,
+        "y": 0.55,
+        "h": 0.22,
+        "rot": 2.0,
+        "z": 10
+      }
+    }
+  ]
+}

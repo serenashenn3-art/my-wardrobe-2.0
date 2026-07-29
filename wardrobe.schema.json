@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/serenashenn3-art/my-wardrobe-2.0/wardrobe.schema.json",
+  "title": "Wardrobe Catalog",
+  "description": "衣橱单品目录 schema, 所有 wardrobe.json 必须符合此结构",
+  "type": "object",
+  "required": ["version", "items"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "description": "数据版本号, 当前为 1"
+    },
+    "created": {
+      "type": "string",
+      "description": "创建日期 (YYYY-MM-DD)"
+    },
+    "source": {
+      "type": "string",
+      "description": "数据来源 URL 或说明"
+    },
+    "cutout": {
+      "type": "string",
+      "description": "抠图方法说明"
+    },
+    "beautify": {
+      "type": "string",
+      "description": "美化方法说明"
+    },
+    "items": {
+      "type": "array",
+      "description": "单品列表",
+      "items": {
+        "type": "object",
+        "required": ["id", "photo", "slot", "label", "color", "style", "seasons", "file", "source"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^\\d{2}$",
+            "description": "两位数字 ID, 如 01, 02"
+          },
+          "photo": {
+            "type": "string",
+            "description": "原始照片标识 (不含扩展名)"
+          },
+          "slot": {
+            "type": "string",
+            "enum": ["top", "outerwear", "bottom", "dress", "shoes", "bag", "hat", "jewelry", "scarf", "socks", "accessory"],
+            "description": "单品槽位"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "单品名称; 有品牌时含品牌名, 无品牌用「品类+颜色」"
+          },
+          "color": {
+            "type": "string",
+            "description": "主色描述"
+          },
+          "style": {
+            "type": "string",
+            "description": "风格关键词"
+          },
+          "seasons": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["春", "夏", "秋", "冬", "四季"]
+            },
+            "minItems": 1,
+            "uniqueItems": true,
+            "description": "适用季节, 一件可多季"
+          },
+          "file": {
+            "type": "string",
+            "description": "抠图文件名 (不含路径)"
+          },
+          "source": {
+            "type": "string",
+            "enum": ["cutout", "beautified", "ai-redraw", "upload"],
+            "description": "单品图来源"
+          },
+          "brand": {
+            "type": "string",
+            "description": "品牌名 (可选, 识别不出时留空)"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "单品特征列表 (面料/领型/五金件等, 可选)"
+          },
+          "note": {
+            "type": "string",
+            "description": "备注 (可选)"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": true
+}
